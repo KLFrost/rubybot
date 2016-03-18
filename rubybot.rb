@@ -61,7 +61,7 @@ class RubyBot < SlackRubyBot::Bot
     client.say(text: n.to_s, channel: data.channel) if n > 0
   end
 
-  match(/^ruby sample (?<set>\w+) *(?<count>-?\d+)?$/i) do |client, data, match|
+  match(/^ruby +sample +(?<set>\w+) *(?<count>-?\d+)?$/i) do |client, data, match|
     count = match[:count].to_i
     set = "rb-set:#{match[:set]}"
     members =
