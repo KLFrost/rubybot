@@ -10,6 +10,7 @@ ruby sadd set_number_9 foo bar baz        add elements to a set
 ruby srem set_foo_bar  baz qux zip        remove elements from a set
 ruby sample set_zippy  10                 sample elements without replacement
 ruby sample set_zippy -10                 sample elements with replacement
+ruby scard foo_bar_set                    count elements in a set
 ruby hi                                   say hi, get a gif
 ruby ping                                 says pong
 ...                                       ?
