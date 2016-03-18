@@ -7,20 +7,21 @@ $youtube_client = Google::APIClient.new(
   application_name: 'ruby-tube', application_version: '0.0.2')
 $youtube = $youtube_client.discovered_api('youtube', 'v3')
 
-def youtube_video(search)
-  return nil unless search
+def youtube_videos(search)
+  return [] unless search && search.strip.size > 0
   response = $youtube_client.execute!(
     api_method: $youtube.search.list,
     parameters: {
       part: 'id',
       q: search,
       type: 'video',
-      maxResults: 1
+      maxResults: 6
     })
-  video_id = response.data.items.first.id.videoId
-  video_id && "https://youtube.com/watch?v=#{video_id}"
-rescue
-  nil
+  video_ids = response.data.items.map { |item| item.id.videoId }
+  video_ids.map { |video_id| "https://youtube.com/watch?v=#{video_id}" }
+rescue => e
+  puts(e.message)
+  []
 end
 
 module SlackRubyBot
@@ -104,9 +105,9 @@ class RubyBot < SlackRubyBot::Bot
   match(/^ruby +youtube +(?<search>.+) *$/i) do |client, data, match|
     search = match[:search].strip
     if search.size > 0
-      result = youtube_video(search)
-      if result
-        client.say(text: result, channel: data.channel)
+      result = youtube_videos(search)
+      if result.size > 0
+        client.say(text: result.sample, channel: data.channel)
       end
     end
   end
