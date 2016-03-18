@@ -1,5 +1,27 @@
 require 'slack-ruby-bot'
 require 'redis'
+require 'google/api_client'
+
+$youtube_client = Google::APIClient.new(
+  key: ENV['YOUTUBE_API_KEY'], authorization: nil,
+  application_name: 'ruby-tube', application_version: '0.0.2')
+$youtube = $youtube_client.discovered_api('youtube', 'v3')
+
+def youtube_video(search)
+  return nil unless search
+  response = $youtube_client.execute!(
+    api_method: $youtube.search.list,
+    parameters: {
+      part: 'id',
+      q: search,
+      type: 'video',
+      maxResults: 1
+    })
+  video_id = response.data.items.first.id.videoId
+  video_id && "https://youtube.com/watch?v=#{video_id}"
+rescue
+  nil
+end
 
 module SlackRubyBot
   module Commands
@@ -13,6 +35,7 @@ ruby sample set_zippy -10                 sample elements with replacement
 ruby scard foo_bar_set                    count elements in a set
 ruby hi                                   say hi, get a gif
 ruby ping                                 says pong
+ruby youtube sara bareilles               returns a youtube video search result
 ...                                       ?
 ```
 EOM
@@ -40,7 +63,7 @@ class RubyBot < SlackRubyBot::Bot
   end
   SADD = %r{^ruby +sadd +(?<set>\w+) +(?<members>([[:graph:]]+ *)+)$}
   SREM = %r{^ruby +srem +(?<set>\w+) +(?<members>([[:graph:]]+ *)+)$}
-  
+
   match(SADD) do |client, data, match|
     members = match[:members].split(/\s+/)
     n = $redis.sadd("rb-set:#{match[:set]}", members)
@@ -77,7 +100,16 @@ class RubyBot < SlackRubyBot::Bot
       client.say(text: members.join(' '), channel: data.channel)
     end
   end
+
+  match(/^ruby +youtube +(?<search>.+) *$/i) do |client, data, match|
+    search = match[:search].strip
+    if search.size > 0
+      result = youtube_video(search)
+      if result
+        client.say(text: result, channel: data.channel)
+      end
+    end
+  end
 end
 
 RubyBot.run
-
