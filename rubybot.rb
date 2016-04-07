@@ -62,8 +62,8 @@ class RubyBot < SlackRubyBot::Bot
     pong = "<@#{data.user}> #{Time.now.utc} :pingpong: pong"
     client.say(text: pong, channel: data.channel)
   end
-  SADD = %r{^ruby +sadd +(?<set>\w+) +(?<members>([[:graph:]]+ *)+)$}
-  SREM = %r{^ruby +srem +(?<set>\w+) +(?<members>([[:graph:]]+ *)+)$}
+  SADD = %r{^ruby +sadd +(?<set>[\w-]+) +(?<members>([[:graph:]]+ *)+)$}i
+  SREM = %r{^ruby +srem +(?<set>[\w-]+) +(?<members>([[:graph:]]+ *)+)$}i
 
   match(SADD) do |client, data, match|
     members = match[:members].split(/\s+/)
