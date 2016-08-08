@@ -89,13 +89,12 @@ class RubyBot < SlackRubyBot::Bot
   match(/^ruby +sample +(?<set>\w+) *(?<count>-?\d+)?$/i) do |client, data, match|
     count = match[:count].to_i
     set = "rb-set:#{match[:set]}"
+    all_members = $redis.smembers(set)
     members =
-      if count.abs > 1
-        $redis.srandmember(set, count)
-      elsif (member = $redis.srandmember(set))
-        [member]
+      if count >= 0
+        all_members.sample(count)
       else
-        []
+        (1..(-count)).map { |i| all_members.sample(1) }.flatten
       end
     unless members.empty?
       client.say(text: members.join(' '), channel: data.channel)
