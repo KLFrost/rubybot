@@ -25,6 +25,10 @@ GEM
     faye-websocket (0.10.3)
       eventmachine (>= 0.12.0)
       websocket-driver (>= 0.5.1)
+    forecast_io (2.0.1)
+      faraday
+      hashie
+      multi_json
     giphy (2.0.2)
       faraday (~> 0.9)
       faraday_middleware (~> 0.9)
@@ -98,6 +102,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  forecast_io
   google-api-client (< 0.9)
   redis
   slack-ruby-bot

@@ -1,6 +1,9 @@
 require 'slack-ruby-bot'
 require 'redis'
 require 'google/api_client'
+require 'forecast_io'
+
+ForecastIO.configure { |c| c.api_key = ENV['DARKSKY_API_TOKEN'] }
 
 $youtube_client = Google::APIClient.new(
   key: ENV['YOUTUBE_API_KEY'], authorization: nil,
@@ -29,6 +32,7 @@ module SlackRubyBot
     class Help < Base
       HELP = <<EOM
 ```
+ruby weather                              talk about the weather
 ruby sadd set_number_9 foo bar baz        add elements to a set
 ruby srem set_foo_bar  baz qux zip        remove elements from a set
 ruby sample set_zippy  10                 sample elements without replacement
@@ -109,6 +113,15 @@ class RubyBot < SlackRubyBot::Bot
         client.say(text: result.sample, channel: data.channel)
       end
     end
+  end
+
+  match(/^ruby +weather/i) do |client, data, match|
+    forecast = ForecastIO.forecast(40.8586443, -73.9325388)
+    currently = forecast.currently
+    current = currently.summary + ' temp. ' + currently.temperature.to_s +
+      ' wind ' + currently.windSpeed.to_s
+    minute = forecast.minutely.summary
+    client.say(text: current + "\n" + minute, channel: data.channel)
   end
 end
 
